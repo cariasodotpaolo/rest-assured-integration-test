@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This file is not really required. Logging configurations can be done in application.properties
+     If this file exists, Spring Boot's default logging configuration will be overwritten.
+     NOTE: The <include> element here inherits the default configuration
+-->
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
-    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="mp.cariaso" level="DEBUG"/>
 </configuration>
