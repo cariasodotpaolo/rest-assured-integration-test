@@ -4,16 +4,24 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertNotNull;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.response.ValidatableResponse;
 import java.util.Arrays;
 import java.util.List;
+import mp.cariaso.springboot.api.request.EmployeeRequest;
 import mp.cariaso.springboot.model.Employee;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class EmployeeController_IntegrationTest extends IntegrationTestBase {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Test
     public void getEmployees() {
@@ -21,14 +29,14 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
 
         ValidatableResponse response =
 
-            given().
-                header("Authorization", RandomStringUtils.randomAlphabetic(12)).
-                header("Accept","application/json").
-                log().all().
-            when().
-                get( getContextUrl() + "/employees/list").
-            then().
-                log().all();
+            given()
+                .header("Authorization", RandomStringUtils.randomAlphabetic(12))
+                .header("Accept","application/json")
+                .log().all()
+            .when()
+                .get( getContextUrl() + "/employees/list")
+            .then()
+                .log().all();
 
         List<Employee> employees = Arrays.asList(response.extract().body().as(Employee[].class));
 
@@ -43,54 +51,50 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
 
         ValidatableResponse response =
 
-            given().
-                pathParam("id", id).
-                header("Authorization", RandomStringUtils.randomAlphabetic(12)).
-                header("Accept","application/json").
-                baseUri(getBaseUri()).
-                port(getPort()).
-                log().all().
-                when().
-                    get("/employees/{id}").
-
-                then().
-                log().all();
+            given()
+                .pathParam("id", id)
+                .header("Authorization", RandomStringUtils.randomAlphabetic(12))
+                .header("Accept","application/json")
+                .baseUri(getBaseUri())
+                .port(getPort())
+                .log().all()
+            .when()
+                    .get("/employees/{id}")
+            .then()
+                .log().all();
 
         Employee employee = response.extract().body().as(Employee.class);
 
         assertThat(employee.getId(), equalTo(id));
     }
 
-/*
-    public Employee addEmployee(Employee employee, String accessToken)  {
+    @Test
+    public void addEmployee()  {
+
 
         ValidatableResponse response =
 
-            given().
-                keystore(KEYSTORE_CERTIFICATE_FILE, KEYSTORE_KEYPASS).
-                formParam("name", employee.getName()).
-                formParam("address", employee.getAddress()).
-                formParam("contactNumber", employee.getContactNumber()).
-                header("Authorization", "Bearer " + accessToken.trim()).
-                header("Accept","application/vnd.shipserv.hr+json").
-                baseUri(BASE_SSL_SERVICE_URL). //for SSL request
-                port(BASE_SSL_SERVICE_PORT). //for SSL request
-                log().all().
-                when().
-                //get("http://localhost:8080/test01/protected/messaging/{name}").
-                    post(SERVICE_CONTEXT_URI + "/employee/add").
+            given()
+                .header("Authorization", RandomStringUtils.randomAlphabetic(12))
+                .header("Accept","application/json")
+                .contentType("application/json")
+                .body(givenNewEmployeeJson())
+                .baseUri(getBaseUri())
+                .port(getPort())
+                .log().all()
+            .when()
+                .post("/employees/add")
+            .then()
+                .log().everything();
 
-                then().
-                log().all();
-
-        Employee addedEmployee = response.extract().body().as(Employee.class);
-
-        return addedEmployee;
+        Long id = response.extract().body().as(Long.class);
+        assertNotNull(id);
+        logger.info("ID: " + id);
 
     }
 
-
-    public Employee updateEmployee(Employee employee, String accessToken)  {
+/*
+    public void updateEmployee()  {
 
         ValidatableResponse response =
 
@@ -139,4 +143,23 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
         return deletedEmployee;
     }
    */
+
+    private String givenNewEmployeeJson() {
+
+        String differentiator = RandomStringUtils.randomAlphabetic(6);
+
+        EmployeeRequest request = new EmployeeRequest(String.format("TEST_NAME-%s", differentiator),
+            String.format("TEST_DEPT-%s", differentiator),
+            String.format("TEST_TITLE-%s", differentiator));
+
+        ObjectMapper jsonMapper = new ObjectMapper();
+        String jsonString = "";
+        try {
+            jsonString = jsonMapper.writeValueAsString(request);
+        } catch (JsonProcessingException e) {
+            logger.error("Error parsing object.", e);
+        }
+
+        return jsonString;
+    }
 }

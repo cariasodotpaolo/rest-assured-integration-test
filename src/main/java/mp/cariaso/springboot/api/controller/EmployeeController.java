@@ -3,6 +3,7 @@ package mp.cariaso.springboot.api.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import mp.cariaso.springboot.api.exception.UnauthorizedException;
+import mp.cariaso.springboot.api.request.EmployeeRequest;
 import mp.cariaso.springboot.model.Employee;
 import mp.cariaso.springboot.service.EmployeeService;
 import org.slf4j.Logger;
@@ -54,29 +55,30 @@ public class EmployeeController {
 
     }
 
-    @RequestMapping(value = "/add", method = RequestMethod.POST, produces = "application/vnd.shipserv.hr+json")
-    public ResponseEntity<?> addEmployee(@PathVariable long id,
-                                         @RequestHeader(value = "Authorization", required = false) String token,
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    public ResponseEntity<?> addEmployee(@RequestHeader(value = "Authorization", required = false) String token,
                                          HttpServletRequest request,
-                                         @RequestBody Employee employee) throws Exception {
+                                         @RequestBody EmployeeRequest employeeRequest) throws Exception {
 
         if(token == null) {
             throw new UnauthorizedException("Please login.");
         }
 
-        if (employee.getName() == null) {
+        if (employeeRequest.getName() == null) {
             throw new IllegalArgumentException("Name is required.");
         }
 
-        if (employee.getDepartment() == null) {
+        if (employeeRequest.getDepartment() == null) {
             throw new IllegalArgumentException("Department is required.");
         }
 
-        if (employee.getTitle() == null) {
+        if (employeeRequest.getTitle() == null) {
             throw new IllegalArgumentException("Title is required.");
         }
 
-        return ResponseEntity.ok(employeeService.add(employee));
+        return ResponseEntity.ok(employeeService.add(new Employee(employeeRequest.getName(),
+                                                                  employeeRequest.getDepartment(),
+                                                                  employeeRequest.getTitle())));
 
     }
 

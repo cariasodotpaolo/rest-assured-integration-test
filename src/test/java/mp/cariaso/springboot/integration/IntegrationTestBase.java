@@ -16,7 +16,7 @@ public class IntegrationTestBase {
     private String port;
 
     public String getContextUrl() {
-        return String.format("http://localhost:%s%s", contextPath);
+        return String.format("http://localhost:%s%s", port, contextPath);
     }
 
     public String getBaseUri() {
