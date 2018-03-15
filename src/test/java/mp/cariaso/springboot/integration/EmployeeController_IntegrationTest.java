@@ -4,6 +4,8 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -49,21 +51,7 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
 
         Long id = 2L;
 
-        ValidatableResponse response =
-
-            given()
-                .pathParam("id", id)
-                .header("Authorization", RandomStringUtils.randomAlphabetic(12))
-                .header("Accept","application/json")
-                .baseUri(getBaseUri())
-                .port(getPort())
-                .log().all()
-            .when()
-                    .get("/employees/{id}")
-            .then()
-                .log().all();
-
-        Employee employee = response.extract().body().as(Employee.class);
+        Employee employee = getEmployee(id);
 
         assertThat(employee.getId(), equalTo(id));
     }
@@ -93,33 +81,35 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
 
     }
 
-/*
+    @Test
     public void updateEmployee()  {
 
-        ValidatableResponse response =
+        Long id = 2L;
+        Employee existingEmployee = getEmployee(id);
 
-            given().
-                keystore("D:\\apache-tomcat-8.0.30\\conf\\tomcat.jks", "tomcat").
-                formParam("id", employee.getId()).
-                formParam("name", employee.getName()).
-                formParam("address", employee.getAddress()).
-                formParam("contactNumber", employee.getContactNumber()).
-                formParam("status", employee.getStatus()).
-                header("Authorization", "Bearer " + accessToken.trim()).
-                header("Accept","application/vnd.shipserv.hr+json").
-                baseUri("https://localhost"). //for SSL request
-                port(8443). //for SSL request
-                log().all().
-                when().
-                post(SERVICE_CONTEXT_URI + "/employee/update").
-                then().
-                log().all();
+            given()
+                .header("Authorization", RandomStringUtils.randomAlphabetic(12))
+                .header("Accept","application/json")
+                .contentType("application/json")
+                .pathParam("id", id)
+                .body(givenUpdateEmployeeJson())
+                .baseUri(getBaseUri())
+                .port(getPort())
+                .log().all()
+            .when()
+                .put("/employees/update/{id}")
+            .then()
+                .log().all()
+                .statusCode(200);
 
-        Employee updatedEmployee = response.extract().body().as(Employee.class);
+        Employee updatedEmployee = getEmployee(id);
 
-        return updatedEmployee;
+        assertNotEquals(existingEmployee.getDepartment(), updatedEmployee.getDepartment() );
+        assertEquals(existingEmployee.getName(), updatedEmployee.getName());
+        assertEquals(existingEmployee.getTitle(), updatedEmployee.getTitle());
     }
 
+    /*
 
     public Employee deleteEmployee(long employeeId, String accessToken)  {
 
@@ -144,6 +134,30 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
     }
    */
 
+    private Employee getEmployee(Long id) {
+
+
+        ValidatableResponse response =
+
+            given()
+                .pathParam("id", id)
+                .header("Authorization", RandomStringUtils.randomAlphabetic(12))
+                .header("Accept","application/json")
+                .baseUri(getBaseUri())
+                .port(getPort())
+                .log().all()
+                .when()
+                .get("/employees/{id}")
+                .then()
+                .log().all();
+
+        Employee employee = response.extract().body().as(Employee.class);
+
+        //assertThat(employee.getId(), equalTo(id));
+
+        return employee;
+    }
+
     private String givenNewEmployeeJson() {
 
         String differentiator = RandomStringUtils.randomAlphabetic(6);
@@ -151,6 +165,24 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
         EmployeeRequest request = new EmployeeRequest(String.format("TEST_NAME-%s", differentiator),
             String.format("TEST_DEPT-%s", differentiator),
             String.format("TEST_TITLE-%s", differentiator));
+
+        ObjectMapper jsonMapper = new ObjectMapper();
+        String jsonString = "";
+        try {
+            jsonString = jsonMapper.writeValueAsString(request);
+        } catch (JsonProcessingException e) {
+            logger.error("Error parsing object.", e);
+        }
+
+        return jsonString;
+    }
+
+    private String givenUpdateEmployeeJson() {
+
+        String differentiator = RandomStringUtils.randomAlphabetic(6);
+
+        EmployeeRequest request = new EmployeeRequest(null,
+            String.format("TEST_UPDATED_DEPT-%s", differentiator),null);
 
         ObjectMapper jsonMapper = new ObjectMapper();
         String jsonString = "";

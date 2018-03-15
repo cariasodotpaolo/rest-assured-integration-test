@@ -86,11 +86,20 @@ public class EmployeeController {
     public ResponseEntity<?> updateEmployee(@PathVariable long id,
                                             @RequestHeader(value = "Authorization", required = false) String token,
                                             HttpServletRequest request,
-                                            @RequestBody Employee employee) throws Exception {
+                                            @RequestBody EmployeeRequest employeeRequest) throws Exception {
 
         if(token == null) {
             throw new UnauthorizedException("Please login.");
         }
+
+        Employee employee = employeeService.get(id);
+
+        employee.setDepartment(employeeRequest.getDepartment() != null && !employeeRequest.getDepartment().isEmpty() ?
+                                employeeRequest.getDepartment() : employee.getDepartment());
+        employee.setTitle(employeeRequest.getTitle() != null && !employeeRequest.getTitle().isEmpty() ?
+                                employeeRequest.getTitle() : employee.getTitle());
+        employee.setName(employeeRequest.getName() != null && !employeeRequest.getName().isEmpty() ?
+                                employeeRequest.getName() : employee.getName());
 
         employeeService.update(employee);
 

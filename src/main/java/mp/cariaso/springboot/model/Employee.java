@@ -39,7 +39,20 @@ public class Employee {
         return title;
     }
 
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }
