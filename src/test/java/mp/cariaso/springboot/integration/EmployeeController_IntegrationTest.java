@@ -51,7 +51,11 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
 
         Long id = 2L;
 
-        Employee employee = getEmployee(id);
+        ValidatableResponse response = getEmployeeResponse(id);
+
+        assertThat(response.extract().statusCode(), equalTo(200));
+
+        Employee employee = response.extract().body().as(Employee.class);
 
         assertThat(employee.getId(), equalTo(id));
     }
@@ -73,7 +77,8 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
             .when()
                 .post("/employees/add")
             .then()
-                .log().everything();
+                .statusCode(200)
+                .log().all();
 
         Long id = response.extract().body().as(Long.class);
         assertNotNull(id);
@@ -85,7 +90,10 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
     public void updateEmployee()  {
 
         Long id = 2L;
-        Employee existingEmployee = getEmployee(id);
+
+        ValidatableResponse response = getEmployeeResponse(id);
+        assertThat(response.extract().statusCode(), equalTo(200));
+        Employee existingEmployee = response.extract().body().as(Employee.class);
 
             given()
                 .header("Authorization", RandomStringUtils.randomAlphabetic(12))
@@ -102,39 +110,37 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
                 .log().all()
                 .statusCode(200);
 
-        Employee updatedEmployee = getEmployee(id);
+        ValidatableResponse updatedResponse = getEmployeeResponse(id);
+        assertThat(updatedResponse.extract().statusCode(), equalTo(200));
+        Employee updatedEmployee = updatedResponse.extract().body().as(Employee.class);
 
-        assertNotEquals(existingEmployee.getDepartment(), updatedEmployee.getDepartment() );
-        assertEquals(existingEmployee.getName(), updatedEmployee.getName());
-        assertEquals(existingEmployee.getTitle(), updatedEmployee.getTitle());
+        assertNotEquals ( existingEmployee.getDepartment(), updatedEmployee.getDepartment() );
+        assertEquals ( existingEmployee.getName(), updatedEmployee.getName() );
+        assertEquals ( existingEmployee.getTitle(), updatedEmployee.getTitle() );
     }
 
-    /*
+    @Test
+    public void deleteEmployee()  {
 
-    public Employee deleteEmployee(long employeeId, String accessToken)  {
-
-        ValidatableResponse response =
+        Long id = 4L;
 
             given().
-                keystore("D:\\apache-tomcat-8.0.30\\conf\\tomcat.jks", "tomcat").
-                pathParam("id", employeeId).
-                header("Authorization", "Bearer " + accessToken.trim()).
-                header("Accept","application/vnd.shipserv.hr+json").
-                baseUri("https://localhost"). //for SSL request
-                port(8443). //for SSL request
+                pathParam("id", id).
+                header("Authorization", RandomStringUtils.randomAlphabetic(12)).
+                baseUri(getBaseUri()).
+                port(getPort()).
                 log().all().
                 when().
-                delete(SERVICE_CONTEXT_URI + "/employee/delete/{id}").
+                delete("/employees/delete/{id}").
                 then().
                 log().all();
 
-        Employee deletedEmployee = response.extract().body().as(Employee.class);
-
-        return deletedEmployee;
+        ValidatableResponse response = getEmployeeResponse(id);
+        assertThat(response.extract().statusCode(), equalTo(404));
     }
-   */
 
-    private Employee getEmployee(Long id) {
+
+    private ValidatableResponse getEmployeeResponse(Long id) {
 
 
         ValidatableResponse response =
@@ -146,16 +152,12 @@ public class EmployeeController_IntegrationTest extends IntegrationTestBase {
                 .baseUri(getBaseUri())
                 .port(getPort())
                 .log().all()
-                .when()
+            .when()
                 .get("/employees/{id}")
-                .then()
+            .then()
                 .log().all();
 
-        Employee employee = response.extract().body().as(Employee.class);
-
-        //assertThat(employee.getId(), equalTo(id));
-
-        return employee;
+        return response;
     }
 
     private String givenNewEmployeeJson() {

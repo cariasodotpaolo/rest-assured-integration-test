@@ -110,12 +110,13 @@ public class EmployeeController {
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE )
     public ResponseEntity<?> deleteEmployee(@PathVariable long id,
                                             @RequestHeader(value = "Authorization", required = false) String token,
-                                            HttpServletRequest request,
-                                            @RequestBody Employee employee) throws Exception {
+                                            HttpServletRequest request) throws Exception {
 
         if(token == null) {
             throw new UnauthorizedException("Please login.");
         }
+
+        Employee employee = employeeService.get(id);
 
         employeeService.delete(employee);
 
