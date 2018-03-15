@@ -17,6 +17,7 @@
         <spring.boot.version>1.3.1.RELEASE</spring.boot.version>
         <java.version>1.8</java.version>
         <skip.integration.test>true</skip.integration.test>
+        <spring.boot.goal>repackage</spring.boot.goal>
     </properties>
 
     <parent>
@@ -90,7 +91,7 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>repackage</goal>
+                            <goal>${spring.boot.goal}</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -198,6 +199,7 @@
                 <!-- this will boot the application right before integration-test phase -->
                 <spring.boot.goal>start</spring.boot.goal>
                 <skip.integration.test>false</skip.integration.test>
+                <build.profile.id>local</build.profile.id>
             </properties>
         </profile>
     </profiles>
