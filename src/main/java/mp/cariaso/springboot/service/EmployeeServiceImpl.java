@@ -31,6 +31,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public List<Employee> searchByName(String keyword) {
+
+         return employeeRepository.searchByName(keyword);
+    }
+
+    @Override
     public Long add(Employee employee) {
 
         employee.setId(employeeRepository.getNewId());

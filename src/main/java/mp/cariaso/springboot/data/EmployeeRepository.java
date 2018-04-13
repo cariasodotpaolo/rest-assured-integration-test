@@ -32,23 +32,20 @@ public class EmployeeRepository {
         return employees;
     }
 
-    private List<Employee> createEmployees() {
+    public List<Employee> searchByName(String keyword) {
 
-        logger.debug("CREATING EMPLOYEES....");
+        List<Employee> result = employees.stream()
+                 .filter(employee -> employee.getName().toLowerCase().contains(keyword.toLowerCase()))
+                 .collect(Collectors.toList());
 
-        employees = new ArrayList<>();
+        result.forEach(employee ->
+            logger.debug(employee.getName())
+        );
 
-        for ( int i = 0; i < 5; i++ ) {
-
-            int id = i + 1;
-
-            Employee employee = new Employee(new Long (id), "name_" + id,
-                                            "DEPT_" + id, "TITLE_" + id);
-            employees.add(employee);
-        }
-
-        return employees;
+        return result;
     }
+
+
 
     public Long add(Employee employee) {
 
@@ -113,6 +110,33 @@ public class EmployeeRepository {
         }
 
         return index;
+    }
+
+    private List<Employee> createEmployees() {
+
+        logger.debug("CREATING EMPLOYEES....");
+
+        employees = new ArrayList<>();
+
+        for ( int i = 0; i < 5; i++ ) {
+
+            int id = i + 1;
+
+            Employee employee = new Employee(new Long (id), "John_Smith_" + id,
+                "DEPT_" + id, "TITLE_" + id);
+            employees.add(employee);
+        }
+
+        for ( int i = 0; i < 5; i++ ) {
+
+            int id = i + 1;
+
+            Employee employee = new Employee(new Long (id), "Mary_Walters_" + id,
+                "DEPT_" + id, "TITLE_" + id);
+            employees.add(employee);
+        }
+
+        return employees;
     }
 
 }

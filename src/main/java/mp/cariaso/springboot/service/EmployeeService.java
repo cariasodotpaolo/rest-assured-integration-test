@@ -10,6 +10,8 @@ public interface EmployeeService {
 
     Employee get(Long id);
 
+    List<Employee> searchByName(String keyword);
+
     Long add(Employee employee);
 
     void update(Employee employee) throws NotFoundException;
